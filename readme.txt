@@ -2,10 +2,12 @@ Sorts mobile photos per date.
 
 Works with Python 3 on Mac
 
-Version 0.2 of the 20181001
+Version 0.3 of the 20190901
 
 added in this version:
--image creation time (hour and minutes) option added
+-added main function
+-added output directory creation
+-improved files paths handling
 
 parameters:
 -input      input directory

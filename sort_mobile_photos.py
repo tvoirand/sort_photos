@@ -3,7 +3,7 @@ Sorts mobile photos per date.
 
 Works with Python 3 on Mac
 
-Version 0.2 of the 20181001
+Version 0.3 of the 20190901
 
 parameters:
 -input      input directory
@@ -14,12 +14,6 @@ import argparse
 import os
 import datetime
 
-parser = argparse.ArgumentParser(description="Rename photos per date.")
-parser.add_argument("-time", action="store_true", help="add image creation time")
-required_arguments = parser.add_argument_group("required arguments")
-required_arguments.add_argument("-input", required=True, help="input directory")
-required_arguments.add_argument("-output", required=True, help="output directory")
-args = parser.parse_args()
 
 def get_creation_date_and_time(file_name):
     """
@@ -49,22 +43,47 @@ def get_creation_date_and_time(file_name):
 
     return creation_date, creation_time
 
-for file in os.listdir(args.input):
 
-    if file != ".DS_Store":
+def sort_mobile_photos(input_dir, output_dir, write_time):
+    """
+    Sort mobile photos per file creation date.
+    Input:
+        -input_dir      str
+        -output_dir     str
+        -write_time     bool
+    """
 
-        creation_date, creation_time = get_creation_date_and_time(args.input + file)
+    if not output_dir == "" and not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-        if args.time:
+    for file in os.listdir(input_dir):
 
-            os.system("cp {} {}".format(
-                args.input + file,
-                args.output + creation_date + "_" + creation_time + "_" + file
-            ))
+        if file != ".DS_Store":
 
-        else:
+            creation_date, creation_time = get_creation_date_and_time(input_dir + file)
 
-            os.system("cp {} {}".format(
-                args.input + file,
-                args.output + creation_date + "_" + file
-            ))
+            if write_time:
+
+                os.system("cp {} {}".format(
+                    os.path.join(input_dir, file),
+                    os.path.join(output_dir, "_".join((creation_date, creation_time, file)))
+                ))
+
+            else:
+
+                os.system("cp {} {}".format(
+                    os.path.join(input_dir, file),
+                    os.path.join(output_dir, "_".join((creation_date, file)))
+                ))
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Rename photos per date.")
+    parser.add_argument("-time", action="store_true", help="add image creation time")
+    required_arguments = parser.add_argument_group("required arguments")
+    required_arguments.add_argument("-input", required=True, help="input directory")
+    required_arguments.add_argument("-output", required=True, help="output directory")
+    args = parser.parse_args()
+
+    sort_mobile_photos(args.input, args.output, args.time)
