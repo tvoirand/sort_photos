@@ -1,15 +1,7 @@
-Sorts mobile photos per date.
+A script that I use to sort my mobile photos.
 
-Works with Python 3 on Mac
-
-Version 0.3 of the 20190901
+Version 0.4 of the 20191008
 
 added in this version:
--added main function
--added output directory creation
--improved files paths handling
-
-parameters:
--input      input directory
--output     output directory
--time       add image creation time (optional)
+-added use of exifread package
+-some refactoring
