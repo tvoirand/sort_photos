@@ -75,7 +75,7 @@ def sort_mobile_photos(input_dir, output_dir, write_time):
             # write output file with creation date and time as filename prefix
             outfile_path = os.path.join(
                 output_dir,
-                "_".join(creation_date, creation_time, os.path.basename(infile_path)),
+                "_".join((creation_date, creation_time, os.path.basename(infile_path))),
             )
 
         else:
