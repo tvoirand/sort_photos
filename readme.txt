@@ -1,7 +1,6 @@
 A script that I use to sort my mobile photos.
 
-Version 0.4 of the 20191008
+Version 0.5 20200411
 
 added in this version:
--added use of exifread package
--some refactoring
+-changed default behaviour to renaming instead of copying

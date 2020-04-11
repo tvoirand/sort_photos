@@ -65,7 +65,7 @@ def sort_mobile_photos(input_dir, output_dir, write_time):
         os.makedirs(output_dir)
 
     # process each file in the input dir
-    for infile in [f for f in os.listdir(input_dir) if not f.endswith(".DS_Store")]:
+    for infile in [f for f in os.listdir(input_dir) if not f.startswith(".")]:
 
         # get creation date and time
         creation_date, creation_time = get_creation_date_and_time(
