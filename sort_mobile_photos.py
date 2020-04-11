@@ -2,9 +2,12 @@
 Sorts mobile photos per date.
 """
 
-import argparse
 import os
+import sys
+import shutil
+import argparse
 import datetime
+
 import exifread
 
 
@@ -42,8 +45,8 @@ def get_creation_date_and_time(file_name):
         hour = str(datetime.datetime.fromtimestamp(stat.st_birthtime).hour).zfill(2)
         minute = str(datetime.datetime.fromtimestamp(stat.st_birthtime).minute).zfill(2)
 
-    creation_date = year + month + day
-    creation_time = hour + minute
+    creation_date = "{}{}{}".format(year, month, day)
+    creation_time = "{}{}".format(hour, minute)
 
     return creation_date, creation_time
 
@@ -58,47 +61,47 @@ def sort_mobile_photos(input_dir, output_dir, write_time):
     """
 
     # create output directory if necessary
-    if not output_dir == "" and not os.path.exists(output_dir):
+    if output_dir is not None and output_dir != "" and not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     # process each file in the input dir
-    for infile_path in [
-        os.path.join(input_dir, f)
-        for f in os.listdir(input_dir)
-        if not f.endswith(".DS_Store")
-    ]:
+    for infile in [f for f in os.listdir(input_dir) if not f.endswith(".DS_Store")]:
 
         # get creation date and time
-        creation_date, creation_time = get_creation_date_and_time(infile_path)
+        creation_date, creation_time = get_creation_date_and_time(
+            os.path.join(input_dir, infile)
+        )
 
         if write_time:
-            # write output file with creation date and time as filename prefix
-            outfile_path = os.path.join(
-                output_dir,
-                "_".join((creation_date, creation_time, os.path.basename(infile_path))),
-            )
+            # create new filename with creation date and time as filename prefix
+            outfile = "_".join((creation_date, creation_time, infile))
 
         else:
-            # write output file with creation date as filename prefix
-            outfile_path = os.path.join(
-                output_dir, "_".join((creation_date, os.path.basename(infile_path)))
-            )
+            # create new filename with creation date as filename prefix
+            outfile = "_".join((creation_date, infile))
 
-        os.system("cp {} {}".format(infile_path, outfile_path))
+        if output_dir is not None:
+            # copy input file to output dir with new filename
+            shutil.copy(
+                os.path.join(input_dir, infile), os.path.join(output_dir, outfile)
+            )
+        else:
+            # rename input file with new filename
+            os.rename(os.path.join(input_dir, infile), os.path.join(input_dir, outfile))
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Rename photos per date.")
     parser.add_argument(
-        "-t", "--time", action="store_true", help="add image creation time"
+        "-t", "--time", action="store_true", help="optional: add image creation time"
+    )
+    parser.add_argument(
+        "-o", "--output", help="optional: copy renamed files in output directory"
     )
     required_arguments = parser.add_argument_group("required arguments")
     required_arguments.add_argument(
         "-i", "--input", required=True, help="input directory"
-    )
-    required_arguments.add_argument(
-        "-o", "--output", required=True, help="output directory"
     )
     args = parser.parse_args()
 
