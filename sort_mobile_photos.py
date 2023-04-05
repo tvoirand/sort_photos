@@ -108,7 +108,7 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
         -input_dir      Path
         -output_dir     Path or None
         -write_time     bool
-        -place_name     string
+        -place_name     string or None
     """
 
     # create output directory if necessary
@@ -122,15 +122,13 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
         creation_date, creation_time = get_creation_date_and_time(infile)
         camera_name = get_camera_name(infile.name)
 
-        if write_time:
-            # create new filename with creation date and time as filename stem
-            output_filename = (
-                f"{creation_date}_{creation_time}_{place_name}_{camera_name}{infile.suffix}"
-            )
-
-        else:
-            # create new filename with creation date as filename stem
-            output_filename = f"{creation_date}_{place_name}_{camera_name}{infile.suffix}"
+        # create output filename based on desired options
+        output_filename = f"{creation_date}"
+        if write_time: 
+            output_filename += f"_{creation_time}"
+        if place_name is not None:
+            output_filename += f"_{place_name}"
+        output_filename += f"_{camera_name}{infile.suffix}"
 
         if output_dir is not None:
             # copy input file to output dir with new filename
@@ -146,17 +144,17 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Rename photos per date.")
     parser.add_argument(
-        "-t", "--time", action="store_true", help="optional: add image creation time"
+        "-t", "--time", action="store_true", help="Add image creation time"
     )
     parser.add_argument(
-        "-o", "--output", help="optional: copy renamed files in output directory"
+        "-o", "--output", help="Copy renamed files in output directory"
+    )
+    parser.add_argument(
+        "-p", "--place", help="Name of place to include in sorted files"
     )
     required_arguments = parser.add_argument_group("required arguments")
     required_arguments.add_argument(
-        "-i", "--input", required=True, help="input directory"
-    )
-    required_arguments.add_argument(
-        "-p", "--place", required=True, help="name of place to include in sorted files"
+        "-i", "--input", required=True, help="Input directory"
     )
     args = parser.parse_args()
 
