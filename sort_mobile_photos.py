@@ -101,13 +101,14 @@ def get_creation_date_and_time(file_name):
     return creation_date, creation_time
 
 
-def sort_mobile_photos(input_dir, output_dir, write_time):
+def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
     """
     Sort mobile photos per file creation date.
     Input:
         -input_dir      Path
-        -output_dir     Path
+        -output_dir     Path or None
         -write_time     bool
+        -place_name     string
     """
 
     # create output directory if necessary
@@ -124,12 +125,12 @@ def sort_mobile_photos(input_dir, output_dir, write_time):
         if write_time:
             # create new filename with creation date and time as filename stem
             output_filename = (
-                f"{creation_date}_{creation_time}_{camera_name}{infile.suffix}"
+                f"{creation_date}_{creation_time}_{place_name}_{camera_name}{infile.suffix}"
             )
 
         else:
             # create new filename with creation date as filename stem
-            output_filename = f"{creation_date}_{camera_name}{infile.suffix}"
+            output_filename = f"{creation_date}_{place_name}_{camera_name}{infile.suffix}"
 
         if output_dir is not None:
             # copy input file to output dir with new filename
@@ -154,8 +155,11 @@ if __name__ == "__main__":
     required_arguments.add_argument(
         "-i", "--input", required=True, help="input directory"
     )
+    required_arguments.add_argument(
+        "-p", "--place", required=True, help="name of place to include in sorted files"
+    )
     args = parser.parse_args()
 
     sort_mobile_photos(
-        Path(args.input), None if args.output is None else Path(args.output), args.time
+        Path(args.input), None if args.output is None else Path(args.output), args.time, args.place
     )
