@@ -2,6 +2,7 @@
 Sorts mobile photos per date.
 """
 
+from pathlib import Path
 import os
 import sys
 import shutil
@@ -16,7 +17,7 @@ def get_creation_date_and_time(file_name):
     Returns creation date of a file in a specific format.
 
     Input:
-        -file_name      string
+        -file_name      Path
     Output:
         -creation_date  string
     """
@@ -55,39 +56,35 @@ def sort_mobile_photos(input_dir, output_dir, write_time):
     """
     Sort mobile photos per file creation date.
     Input:
-        -input_dir      str
-        -output_dir     str
+        -input_dir      Path
+        -output_dir     Path
         -write_time     bool
     """
 
     # create output directory if necessary
-    if output_dir is not None and output_dir != "" and not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if output_dir is not None:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     # process each file in the input dir
-    for infile in [f for f in os.listdir(input_dir) if not f.startswith(".")]:
+    for infile in [f for f in input_dir.iterdir() if not f.name.startswith(".")]:
 
-        # get creation date and time
-        creation_date, creation_time = get_creation_date_and_time(
-            os.path.join(input_dir, infile)
-        )
+        # get creation date and time and camera name
+        creation_date, creation_time = get_creation_date_and_time(infile)
 
         if write_time:
-            # create new filename with creation date and time as filename prefix
-            outfile = "_".join((creation_date, creation_time, infile))
+            # create new filename with creation date and time as filename stem
+            output_filename = f"{creation_date}_{creation_time}_{infile.name}"
 
         else:
-            # create new filename with creation date as filename prefix
-            outfile = "_".join((creation_date, infile))
+            # create new filename with creation date as filename stem
+            output_filename = f"{creation_date}_{infile.name}"
 
         if output_dir is not None:
             # copy input file to output dir with new filename
-            shutil.copy(
-                os.path.join(input_dir, infile), os.path.join(output_dir, outfile)
-            )
+            shutil.copy(infile, output_dir / output_filename)
         else:
             # rename input file with new filename
-            os.rename(os.path.join(input_dir, infile), os.path.join(input_dir, outfile))
+            infile.rename(input_dir / output_filename)
 
 
 if __name__ == "__main__":
@@ -105,4 +102,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    sort_mobile_photos(args.input, args.output, args.time)
+    sort_mobile_photos(
+        Path(args.input), None if args.output is None else Path(args.output), args.time
+    )
