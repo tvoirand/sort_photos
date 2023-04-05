@@ -12,6 +12,55 @@ import datetime
 import exifread
 
 
+def get_camera_name(file_name):
+    """
+    Returns creation date of a file in a specific format.
+
+    Input:
+        -file_name      string
+    Output:
+        -camera_name    string
+    """
+
+    # identify camera
+    if file_name.startswith("IMG_") and len(file_name) == 12:
+        return "iphone"
+    elif file_name.startswith("P") and len(file_name) == 12:
+        return "lumix"
+    elif len(file_name) == 23:
+        return "huawei"
+    else:
+        return "other"
+
+
+def add_trailing_number(target_filename):
+    """
+    Add trailing number to target filename if a file already exists with that name.
+
+    Input:
+        -filename   Path
+    Output:
+        -           Path
+    """
+    if target_filename.is_file():
+        # initiate alternative filename with trailing number
+        i = 2
+        resulting_filename = (
+            target_filename.parent
+            / f"{target_filename.stem}_{i}{target_filename.suffix}"
+        )
+        while resulting_filename.is_file():
+            # increase trailing number as long as alternative filename exists
+            i += 1
+            resulting_filename = (
+                target_filename.parent
+                / f"{target_filename.stem}_{i}{target_filename.suffix}"
+            )
+    else:
+        resulting_filename = target_filename
+    return resulting_filename
+
+
 def get_creation_date_and_time(file_name):
     """
     Returns creation date of a file in a specific format.
@@ -70,20 +119,25 @@ def sort_mobile_photos(input_dir, output_dir, write_time):
 
         # get creation date and time and camera name
         creation_date, creation_time = get_creation_date_and_time(infile)
+        camera_name = get_camera_name(infile.name)
 
         if write_time:
             # create new filename with creation date and time as filename stem
-            output_filename = f"{creation_date}_{creation_time}_{infile.name}"
+            output_filename = (
+                f"{creation_date}_{creation_time}_{camera_name}{infile.suffix}"
+            )
 
         else:
             # create new filename with creation date as filename stem
-            output_filename = f"{creation_date}_{infile.name}"
+            output_filename = f"{creation_date}_{camera_name}{infile.suffix}"
 
         if output_dir is not None:
             # copy input file to output dir with new filename
+            output_filename = add_trailing_number(output_dir / output_filename)
             shutil.copy(infile, output_dir / output_filename)
         else:
             # rename input file with new filename
+            output_filename = add_trailing_number(input_dir / output_filename)
             infile.rename(input_dir / output_filename)
 
 
