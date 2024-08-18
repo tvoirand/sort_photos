@@ -45,14 +45,14 @@ def add_trailing_number(target_filename):
         return target_filename
 
 
-def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
+def sort_mobile_photos(input_dir, output_dir, write_time, tag):
     """Sort mobile photos per file creation date.
 
     Input:
         -input_dir      Path
         -output_dir     Path or None
         -write_time     bool
-        -place_name     string or None
+        -tag            string or None
     """
 
     # Create output directory if necessary
@@ -90,8 +90,8 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
         filename_parts = [acquisition_datetime.strftime("%Y%m%d")]
         if write_time:
             filename_parts.append(acquisition_datetime.strftime("%H%M%S"))
-        if place_name is not None:
-            filename_parts.append(place_name)
+        if tag is not None:
+            filename_parts.append(tag)
         if model is not None:
             filename_parts.append(model)
         output_filename = "_".join(filename_parts) + input_file.suffix
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Rename photos per date.")
     parser.add_argument("-t", "--time", action="store_true", help="Add image creation time")
     parser.add_argument("-o", "--output", help="Copy renamed files in output directory")
-    parser.add_argument("-p", "--place", help="Name of place to include in sorted files")
+    parser.add_argument("--tag", help="Add a tag to include in sorted files names")
     required_arguments = parser.add_argument_group("required arguments")
     required_arguments.add_argument("-i", "--input", required=True, help="Input directory")
     args = parser.parse_args()
@@ -120,5 +120,5 @@ if __name__ == "__main__":
         Path(args.input),
         None if args.output is None else Path(args.output),
         args.time,
-        args.place,
+        args.tag,
     )
