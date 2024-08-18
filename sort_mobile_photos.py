@@ -81,21 +81,22 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
             acquisition_datetime = datetime.datetime.fromtimestamp(input_file.stat().st_birthtime)
 
         # get camera model
+        model = None
         try:
             model_tag = exif_tags["Image Model"]
             model = simplify_camera_model(model_tag.values)
         except KeyError:
             logger.warning(f"Couldn't find camera model EXIF tag for {input_file}")
-            model = "other"
 
         # create output filename based on desired options
         filename_parts = [acquisition_datetime.strftime("%Y%m%d")]
         if write_time:
             filename_parts.append(acquisition_datetime.strftime("%H%M%S"))
         if place_name is not None:
-            filename_parts.append(f"{place_name}")
-        filename_parts.append(f"{model}{input_file.suffix}")
-        output_filename = "_".join(filename_parts)
+            filename_parts.append(place_name)
+        if model is not None:
+            filename_parts.append(model)
+        output_filename = "_".join(filename_parts) + input_file.suffix
 
         if output_dir is not None:
             # copy input file to output dir with new filename
