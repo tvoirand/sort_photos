@@ -89,12 +89,13 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
             model = "other"
 
         # create output filename based on desired options
-        output_filename = acquisition_datetime.strftime("%Y%m%d")
+        filename_parts = [acquisition_datetime.strftime("%Y%m%d")]
         if write_time:
-            output_filename += acquisition_datetime.strftime("_%H%M%S")
+            filename_parts.append(acquisition_datetime.strftime("%H%M%S"))
         if place_name is not None:
-            output_filename += f"_{place_name}"
-        output_filename += f"_{model}{input_file.suffix}"
+            filename_parts.append(f"{place_name}")
+        filename_parts.append(f"{model}{input_file.suffix}")
+        output_filename = "_".join(filename_parts)
 
         if output_dir is not None:
             # copy input file to output dir with new filename
