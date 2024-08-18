@@ -1,5 +1,19 @@
 # Configuration file used by packaging tools, as well as other tools such as linters
 
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sort_photos"
+version = "0.0.1"
+dependencies = [
+   "exifread",
+]
+
+[project.scripts]
+sort-photos = "sort_photos.main:main"
+
 [tool.black]
 line-length = 100
 

@@ -106,7 +106,8 @@ def sort_photos(input_dir, output_dir, write_time, tag):
             input_file.rename(input_dir / output_filename)
 
 
-if __name__ == "__main__":
+def cli():
+    """Command-line interface to sort_photos based on argparse."""
 
     parser = argparse.ArgumentParser(description="Rename photos per date.")
     parser.add_argument("-t", "--time", action="store_true", help="Add image creation time")
@@ -122,3 +123,7 @@ if __name__ == "__main__":
         args.time,
         args.tag,
     )
+
+
+if __name__ == "__main__":
+    cli()
