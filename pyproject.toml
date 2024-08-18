@@ -9,10 +9,11 @@ name = "sort_photos"
 version = "0.0.1"
 dependencies = [
    "exifread",
+   "typer",
 ]
 
 [project.scripts]
-sort-photos = "sort_photos.main:main"
+sort-photos = "sort_photos.main:app"
 
 [tool.black]
 line-length = 100
