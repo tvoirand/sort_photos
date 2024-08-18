@@ -2,14 +2,15 @@
 Sorts mobile photos per date.
 """
 
-from pathlib import Path
-import os
-import sys
-import shutil
 import argparse
 import datetime
+import logging
+import shutil
+from pathlib import Path
 
 import exifread
+
+logger = logging.getLogger()
 
 
 def get_camera_name(file_name):
@@ -46,59 +47,17 @@ def add_trailing_number(target_filename):
         # initiate alternative filename with trailing number
         i = 2
         resulting_filename = (
-            target_filename.parent
-            / f"{target_filename.stem}_{i}{target_filename.suffix}"
+            target_filename.parent / f"{target_filename.stem}_{i}{target_filename.suffix}"
         )
         while resulting_filename.is_file():
             # increase trailing number as long as alternative filename exists
             i += 1
             resulting_filename = (
-                target_filename.parent
-                / f"{target_filename.stem}_{i}{target_filename.suffix}"
+                target_filename.parent / f"{target_filename.stem}_{i}{target_filename.suffix}"
             )
     else:
         resulting_filename = target_filename
     return resulting_filename
-
-
-def get_creation_date_and_time(file_name):
-    """
-    Returns creation date of a file in a specific format.
-
-    Input:
-        -file_name      Path
-    Output:
-        -creation_date  string
-    """
-
-    # reading exif data
-    with open(file_name, "rb") as f:
-        exif_tags = exifread.process_file(f)
-
-    try:
-
-        datetime_str = exif_tags["Image DateTime"].values
-
-        year = datetime_str[:4]
-        month = datetime_str[5:7]
-        day = datetime_str[8:10]
-        hour = datetime_str[11:13]
-        minute = datetime_str[14:16]
-
-    except KeyError:  # use os if exif data not correctly read
-
-        stat = os.stat(file_name)
-
-        year = str(datetime.datetime.fromtimestamp(stat.st_birthtime).year).zfill(4)
-        month = str(datetime.datetime.fromtimestamp(stat.st_birthtime).month).zfill(2)
-        day = str(datetime.datetime.fromtimestamp(stat.st_birthtime).day).zfill(2)
-        hour = str(datetime.datetime.fromtimestamp(stat.st_birthtime).hour).zfill(2)
-        minute = str(datetime.datetime.fromtimestamp(stat.st_birthtime).minute).zfill(2)
-
-    creation_date = "{}{}{}".format(year, month, day)
-    creation_time = "{}{}".format(hour, minute)
-
-    return creation_date, creation_time
 
 
 def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
@@ -116,48 +75,58 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
         output_dir.mkdir(parents=True, exist_ok=True)
 
     # process each file in the input dir
-    for infile in [f for f in input_dir.iterdir() if not f.name.startswith(".")]:
+    for input_file in [f for f in input_dir.iterdir() if not f.name.startswith(".")]:
 
-        # get creation date and time and camera name
-        creation_date, creation_time = get_creation_date_and_time(infile)
-        camera_name = get_camera_name(infile.name)
+        with open(input_file, "rb") as f:
+            exif_tags = exifread.process_file(f, details=False)
+
+        # get acquisition date and time
+        try:
+            datetime_tag = exif_tags["Image Datetime"]
+            acquisition_datetime = datetime.datetime.strptime(
+                datetime_tag.values, "%Y:%m:%d %H:%M:%S"
+            )
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            logger.warning(
+                f"Couldn't find datetime EXIF tag for {input_file}, using file creation date"
+            )
+            acquisition_datetime = datetime.datetime.fromtimestamp(input_file.stat().st_birthtime)
+
+        # get camera model
+        camera_name = get_camera_name(input_file.name)
 
         # create output filename based on desired options
-        output_filename = f"{creation_date}"
-        if write_time: 
-            output_filename += f"_{creation_time}"
+        output_filename = acquisition_datetime.strftime("%Y%m%d")
+        if write_time:
+            output_filename += acquisition_datetime.strftime("_%H%M%S")
         if place_name is not None:
             output_filename += f"_{place_name}"
-        output_filename += f"_{camera_name}{infile.suffix}"
+        output_filename += f"_{camera_name}{input_file.suffix}"
 
         if output_dir is not None:
             # copy input file to output dir with new filename
             output_filename = add_trailing_number(output_dir / output_filename)
-            shutil.copy(infile, output_dir / output_filename)
+            shutil.copy(input_file, output_dir / output_filename)
         else:
             # rename input file with new filename
             output_filename = add_trailing_number(input_dir / output_filename)
-            infile.rename(input_dir / output_filename)
+            input_file.rename(input_dir / output_filename)
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Rename photos per date.")
-    parser.add_argument(
-        "-t", "--time", action="store_true", help="Add image creation time"
-    )
-    parser.add_argument(
-        "-o", "--output", help="Copy renamed files in output directory"
-    )
-    parser.add_argument(
-        "-p", "--place", help="Name of place to include in sorted files"
-    )
+    parser.add_argument("-t", "--time", action="store_true", help="Add image creation time")
+    parser.add_argument("-o", "--output", help="Copy renamed files in output directory")
+    parser.add_argument("-p", "--place", help="Name of place to include in sorted files")
     required_arguments = parser.add_argument_group("required arguments")
-    required_arguments.add_argument(
-        "-i", "--input", required=True, help="Input directory"
-    )
+    required_arguments.add_argument("-i", "--input", required=True, help="Input directory")
     args = parser.parse_args()
 
     sort_mobile_photos(
-        Path(args.input), None if args.output is None else Path(args.output), args.time, args.place
+        Path(args.input),
+        None if args.output is None else Path(args.output),
+        args.time,
+        args.place,
     )
