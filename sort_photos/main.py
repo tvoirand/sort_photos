@@ -15,22 +15,15 @@ logger = logging.getLogger()
 app = typer.Typer()
 
 
-def simplify_camera_model(string):
+def simplify_camera_model(string: str) -> str:
     """Simplifies camera model name to create concise file names."""
     string = "".join(string.split()).lower()  # remove whitespaces and convert to lowercase
     string = re.sub(r"[^a-z0-9]", "", string)  # remove special characters
     return string
 
 
-def add_trailing_number(target_filename):
-    """Add trailing number to target filename if a file already exists with that name.
-
-    Input:
-        -   Path
-
-    Output:
-        -   Path
-    """
+def add_trailing_number(target_filename: Path) -> Path:
+    """Add trailing number to target filename if a file already exists with that name."""
     if target_filename.is_file():
         # Initiate alternative filename with trailing number
         i = 2
