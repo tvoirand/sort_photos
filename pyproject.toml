@@ -1,0 +1,8 @@
+# Configuration file used by packaging tools, as well as other tools such as linters
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+force_single_line = true
