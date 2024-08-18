@@ -1,4 +1,4 @@
-"""Rename mobile photos to easily sort them by date."""
+"""Rename photos to easily sort them by date."""
 
 import argparse
 import datetime
@@ -45,8 +45,8 @@ def add_trailing_number(target_filename):
         return target_filename
 
 
-def sort_mobile_photos(input_dir, output_dir, write_time, tag):
-    """Sort mobile photos per file creation date.
+def sort_photos(input_dir, output_dir, write_time, tag):
+    """Rename photos to easily sort them by date.
 
     Input:
         -input_dir      Path
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     required_arguments.add_argument("-i", "--input", required=True, help="Input directory")
     args = parser.parse_args()
 
-    sort_mobile_photos(
+    sort_photos(
         Path(args.input),
         None if args.output is None else Path(args.output),
         args.time,
