@@ -66,7 +66,7 @@ def sort_photos(
 
         # Get acquisition date and time
         try:
-            datetime_tag = exif_tags["Image Datetime"]
+            datetime_tag = exif_tags["Image DateTime"]
             acquisition_datetime = datetime.datetime.strptime(
                 datetime_tag.values, "%Y:%m:%d %H:%M:%S"
             )
