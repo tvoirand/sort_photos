@@ -1,6 +1,4 @@
-"""
-Sorts mobile photos per date.
-"""
+"""Rename mobile photos to easily sort them by date."""
 
 import argparse
 import datetime
@@ -22,34 +20,34 @@ def simplify_camera_model(string):
 
 
 def add_trailing_number(target_filename):
-    """
-    Add trailing number to target filename if a file already exists with that name.
+    """Add trailing number to target filename if a file already exists with that name.
 
     Input:
-        -filename   Path
+        -   Path
+
     Output:
-        -           Path
+        -   Path
     """
     if target_filename.is_file():
-        # initiate alternative filename with trailing number
+        # Initiate alternative filename with trailing number
         i = 2
         resulting_filename = (
             target_filename.parent / f"{target_filename.stem}_{i}{target_filename.suffix}"
         )
         while resulting_filename.is_file():
-            # increase trailing number as long as alternative filename exists
+            # Increase trailing number as long as alternative filename exists
             i += 1
             resulting_filename = (
                 target_filename.parent / f"{target_filename.stem}_{i}{target_filename.suffix}"
             )
+        return resulting_filename
     else:
-        resulting_filename = target_filename
-    return resulting_filename
+        return target_filename
 
 
 def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
-    """
-    Sort mobile photos per file creation date.
+    """Sort mobile photos per file creation date.
+
     Input:
         -input_dir      Path
         -output_dir     Path or None
@@ -57,17 +55,17 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
         -place_name     string or None
     """
 
-    # create output directory if necessary
+    # Create output directory if necessary
     if output_dir is not None:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    # process each file in the input dir
+    # Process each file in the input dir
     for input_file in [f for f in input_dir.iterdir() if not f.name.startswith(".")]:
 
         with open(input_file, "rb") as f:
             exif_tags = exifread.process_file(f, details=False)
 
-        # get acquisition date and time
+        # Get acquisition date and time
         try:
             datetime_tag = exif_tags["Image Datetime"]
             acquisition_datetime = datetime.datetime.strptime(
@@ -80,7 +78,7 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
             )
             acquisition_datetime = datetime.datetime.fromtimestamp(input_file.stat().st_birthtime)
 
-        # get camera model
+        # Get camera model
         model = None
         try:
             model_tag = exif_tags["Image Model"]
@@ -88,7 +86,7 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
         except KeyError:
             logger.warning(f"Couldn't find camera model EXIF tag for {input_file}")
 
-        # create output filename based on desired options
+        # Create output filename based on desired options
         filename_parts = [acquisition_datetime.strftime("%Y%m%d")]
         if write_time:
             filename_parts.append(acquisition_datetime.strftime("%H%M%S"))
@@ -99,11 +97,11 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
         output_filename = "_".join(filename_parts) + input_file.suffix
 
         if output_dir is not None:
-            # copy input file to output dir with new filename
+            # Copy input file to output dir with new filename
             output_filename = add_trailing_number(output_dir / output_filename)
             shutil.copy(input_file, output_dir / output_filename)
         else:
-            # rename input file with new filename
+            # Rename input file with new filename
             output_filename = add_trailing_number(input_dir / output_filename)
             input_file.rename(input_dir / output_filename)
 
