@@ -7,6 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sort_photos"
 version = "0.0.1"
+description = "Command-line tool to rename photos by date, time and camera model, to sort them by filename"
 dependencies = [
    "exifread",
    "typer",
