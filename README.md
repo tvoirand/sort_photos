@@ -1,16 +1,18 @@
 # Sort Photos
 
-A script that I use to sort my photos.
+Command-line tool to rename photos by date, time and camera model, to sort them by filename.
 
-## Dependencies
+## Installation
 
-* Python 3
-* Exifread
+Install from source for example with pip (requires Python 3):
+```bash
+pip install .
+```
 
 ## Usage
 
 ```bash
-python sort_photos.py --input <path to folder containing images to sort>
+sort-photos <path to folder containing images to sort>
 ```
 
-Use `python sort_photos.py -h` to display other options.
+Use `sort-photos --help` to display available options.
