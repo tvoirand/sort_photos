@@ -5,6 +5,7 @@ Sorts mobile photos per date.
 import argparse
 import datetime
 import logging
+import re
 import shutil
 from pathlib import Path
 
@@ -13,25 +14,11 @@ import exifread
 logger = logging.getLogger()
 
 
-def get_camera_name(file_name):
-    """
-    Returns creation date of a file in a specific format.
-
-    Input:
-        -file_name      string
-    Output:
-        -camera_name    string
-    """
-
-    # identify camera
-    if file_name.startswith("IMG_") and len(file_name) == 12:
-        return "iphone"
-    elif file_name.startswith("P") and len(file_name) == 12:
-        return "lumix"
-    elif len(file_name) == 23:
-        return "huawei"
-    else:
-        return "other"
+def simplify_camera_model(string):
+    """Simplifies camera model name to create concise file names."""
+    string = "".join(string.split()).lower()  # remove whitespaces and convert to lowercase
+    string = re.sub(r"[^a-z0-9]", "", string)  # remove special characters
+    return string
 
 
 def add_trailing_number(target_filename):
@@ -94,7 +81,12 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
             acquisition_datetime = datetime.datetime.fromtimestamp(input_file.stat().st_birthtime)
 
         # get camera model
-        camera_name = get_camera_name(input_file.name)
+        try:
+            model_tag = exif_tags["Image Model"]
+            model = simplify_camera_model(model_tag.values)
+        except KeyError:
+            logger.warning(f"Couldn't find camera model EXIF tag for {input_file}")
+            model = "other"
 
         # create output filename based on desired options
         output_filename = acquisition_datetime.strftime("%Y%m%d")
@@ -102,7 +94,7 @@ def sort_mobile_photos(input_dir, output_dir, write_time, place_name):
             output_filename += acquisition_datetime.strftime("_%H%M%S")
         if place_name is not None:
             output_filename += f"_{place_name}"
-        output_filename += f"_{camera_name}{input_file.suffix}"
+        output_filename += f"_{model}{input_file.suffix}"
 
         if output_dir is not None:
             # copy input file to output dir with new filename
