@@ -1,6 +1,5 @@
-"""Rename mobile photos to easily sort them by date."""
+"""Rename photos to easily sort them by date."""
 
-import argparse
 import datetime
 import logging
 import re
@@ -8,26 +7,23 @@ import shutil
 from pathlib import Path
 
 import exifread
+import typer
+from typing_extensions import Annotated
 
 logger = logging.getLogger()
 
+app = typer.Typer()
 
-def simplify_camera_model(string):
+
+def simplify_camera_model(string: str) -> str:
     """Simplifies camera model name to create concise file names."""
     string = "".join(string.split()).lower()  # remove whitespaces and convert to lowercase
     string = re.sub(r"[^a-z0-9]", "", string)  # remove special characters
     return string
 
 
-def add_trailing_number(target_filename):
-    """Add trailing number to target filename if a file already exists with that name.
-
-    Input:
-        -   Path
-
-    Output:
-        -   Path
-    """
+def add_trailing_number(target_filename: Path) -> Path:
+    """Add trailing number to target filename if a file already exists with that name."""
     if target_filename.is_file():
         # Initiate alternative filename with trailing number
         i = 2
@@ -45,15 +41,18 @@ def add_trailing_number(target_filename):
         return target_filename
 
 
-def sort_mobile_photos(input_dir, output_dir, write_time, tag):
-    """Sort mobile photos per file creation date.
-
-    Input:
-        -input_dir      Path
-        -output_dir     Path or None
-        -write_time     bool
-        -tag            string or None
-    """
+@app.command(no_args_is_help=True)
+def sort_photos(
+    input_dir: Annotated[Path, typer.Argument(help="Input directory")],
+    output_dir: Annotated[
+        Path, typer.Option("-o", "--output-dir", help="Copy renamed files in output directory")
+    ] = None,
+    write_time: Annotated[
+        bool, typer.Option("-t", "--write-time", help="Add image creation time")
+    ] = False,
+    tag: Annotated[str, typer.Option(help="Add a tag to include in sorted files names")] = None,
+):
+    """Rename photos to easily sort them by date."""
 
     # Create output directory if necessary
     if output_dir is not None:
@@ -107,18 +106,4 @@ def sort_mobile_photos(input_dir, output_dir, write_time, tag):
 
 
 if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description="Rename photos per date.")
-    parser.add_argument("-t", "--time", action="store_true", help="Add image creation time")
-    parser.add_argument("-o", "--output", help="Copy renamed files in output directory")
-    parser.add_argument("--tag", help="Add a tag to include in sorted files names")
-    required_arguments = parser.add_argument_group("required arguments")
-    required_arguments.add_argument("-i", "--input", required=True, help="Input directory")
-    args = parser.parse_args()
-
-    sort_mobile_photos(
-        Path(args.input),
-        None if args.output is None else Path(args.output),
-        args.time,
-        args.tag,
-    )
+    app()

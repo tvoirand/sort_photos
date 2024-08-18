@@ -1,0 +1,24 @@
+# Configuration file used by packaging tools, as well as other tools such as linters
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sort_photos"
+version = "0.0.1"
+description = "Command-line tool to rename photos by date, time and camera model, to sort them by filename"
+dependencies = [
+   "exifread",
+   "typer",
+]
+
+[project.scripts]
+sort-photos = "sort_photos.main:app"
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+force_single_line = true
