@@ -10,6 +10,8 @@ import exifread
 import typer
 from typing_extensions import Annotated
 
+from sort_photos.cli.common import path_autocomplete
+
 logger = logging.getLogger()
 
 app = typer.Typer()
@@ -43,9 +45,17 @@ def add_trailing_number(target_filename: Path) -> Path:
 
 @app.command(no_args_is_help=True)
 def sort_photos(
-    input_dir: Annotated[Path, typer.Argument(help="Input directory")],
+    input_dir: Annotated[
+        Path, typer.Argument(help="Input directory", shell_complete=path_autocomplete())
+    ],
     output_dir: Annotated[
-        Path, typer.Option("-o", "--output-dir", help="Copy renamed files in output directory")
+        Path,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Copy renamed files in output directory",
+            shell_complete=path_autocomplete(),
+        ),
     ] = None,
     write_time: Annotated[
         bool, typer.Option("-t", "--write-time", help="Add image creation time")
