@@ -63,14 +63,12 @@ def sort_photos(
     tag: Annotated[str, typer.Option(help="Add a tag to include in sorted files names")] = None,
 ):
     """Rename photos to easily sort them by date."""
-
     # Create output directory if necessary
     if output_dir is not None:
         output_dir.mkdir(parents=True, exist_ok=True)
 
     # Process each file in the input dir
     for input_file in [f for f in input_dir.iterdir() if not f.name.startswith(".")]:
-
         with open(input_file, "rb") as f:
             exif_tags = exifread.process_file(f, details=False)
 
